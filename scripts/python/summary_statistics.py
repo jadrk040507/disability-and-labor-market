@@ -4,11 +4,13 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from tabulate import tabulate
 import scipy.stats as stats
-import os
+from pathlib import Path
 
-# Load the dataset
-os.chdir("C:/Users/ediaz/OneDrive - up.edu.mx/Research/Majo Favela/Python_MMP_2020")
-dw = pd.read_csv('Bases/disability_work.csv')
+# Repository root directory
+BASE_DIR = Path(__file__).resolve().parents[2]
+
+# Load the merged dataset produced by Base_creation.py
+dw = pd.read_csv(BASE_DIR / 'data' / 'processed' / 'disability_work.csv')
 
 # Create 'cause_dis' column
 dw['cause_dis'] = 0
@@ -196,4 +198,5 @@ dw['educ'] = np.where(dw['illiterate'] == 1, 0,
 # Display the first few rows to verify
 print(dw[['illiterate', 'less_primary', 'primary', 'secondary', 'bac', 'higher', 'educ']].head())
 
-dw.to_csv('Bases/disability_work_edit.csv')
+# Optionally save the edited dataset
+dw.to_csv(BASE_DIR / 'data' / 'processed' / 'disability_work_edit.csv')

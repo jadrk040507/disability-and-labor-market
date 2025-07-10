@@ -1,9 +1,15 @@
 import pandas as pd
 import numpy as np
+from tabulate import tabulate
+import matplotlib.pyplot as plt
 
-import os
-os.chdir("C:/Users/ediaz/OneDrive - up.edu.mx/Research/Majo Favela/Python_MMP_2022")
-# os.getcwd()
+from pathlib import Path
+
+# Repository root directory
+BASE_DIR = Path(__file__).resolve().parents[2]
+
+# Raw data folder location
+DATA_DIR = BASE_DIR / 'data' / 'raw'
 
 ################################################################################
 #                                                                              #
@@ -11,42 +17,63 @@ os.chdir("C:/Users/ediaz/OneDrive - up.edu.mx/Research/Majo Favela/Python_MMP_20
 #                                                                              #
 ################################################################################                                                                                                                                                            
 
-work_df = pd.read_csv('Bases de datos/trabajos.csv', low_memory=False)
+# Path to the raw work dataset downloaded from ENOE
+work_df = pd.read_csv(DATA_DIR / 'trabajos.csv', low_memory=False, dtype=str)
+
+work_df[['id_trabajo', 'trapais', 'subor',
+       'indep', 'personal', 'pago', 'contrato', 'tipocontr', 'pres_1',
+       'pres_2', 'pres_3', 'pres_4', 'pres_5', 'pres_6', 'pres_7', 'pres_8',
+       'pres_9', 'pres_10', 'pres_11', 'pres_12', 'pres_13', 'pres_14',
+       'pres_15', 'pres_16', 'pres_17', 'pres_18', 'pres_19', 'pres_20',
+       'htrab', 'sinco', 'scian', 'clas_emp', 'tam_emp', 'no_ing',
+       'tiene_suel', 'tipoact', 'socios', 'soc_nr1', 'soc_nr2', 'soc_resp',
+       'otra_act', 'tipoact2', 'tipoact3', 'tipoact4', 'lugar', 'conf_pers',
+       'medtrab_1', 'medtrab_2', 'medtrab_3', 'medtrab_4', 'medtrab_5',
+       'medtrab_6', 'medtrab_7']] = work_df[['id_trabajo', 'trapais', 'subor',
+       'indep', 'personal', 'pago', 'contrato', 'tipocontr', 'pres_1',
+       'pres_2', 'pres_3', 'pres_4', 'pres_5', 'pres_6', 'pres_7', 'pres_8',
+       'pres_9', 'pres_10', 'pres_11', 'pres_12', 'pres_13', 'pres_14',
+       'pres_15', 'pres_16', 'pres_17', 'pres_18', 'pres_19', 'pres_20',
+       'htrab', 'sinco', 'scian', 'clas_emp', 'tam_emp', 'no_ing',
+       'tiene_suel', 'tipoact', 'socios', 'soc_nr1', 'soc_nr2', 'soc_resp',
+       'otra_act', 'tipoact2', 'tipoact3', 'tipoact4', 'lugar', 'conf_pers',
+       'medtrab_1', 'medtrab_2', 'medtrab_3', 'medtrab_4', 'medtrab_5',
+       'medtrab_6', 'medtrab_7']].apply(pd.to_numeric, errors='coerce')
 
 # Only keeping information on main occupation
-work_df = work_df[work_df['id_trabajo']== 1]
+work_df = work_df[work_df['id_trabajo']==1]
 
 # Job benefits
 #   We are going to define four categories of jobs based on the benefits given to employees. According to the Ley Federal del Trabajo (nationally applicable labor law in Mexico) and the Ley del Seguro Social (general law for social security) state that there are some lawfully mandated? benefits
 #   these include benefits 1-3, 5 7-8, 11,14, 17, 18 (10)
 #   jobs may be then classified in the way that they comply with labor law (%) and the number of extra benefits that they offer.
 
-work_df['leg_ben'] = work_df[['pres_1', 'pres_2', 'pres_3', 'pres_5', 'pres_7', 'pres_8', 'pres_11', 'pres_14', 'pres_17', 'pres_18']].apply(pd.to_numeric, errors='coerce').mean(axis=1)
-work_df['extra_ben'] = work_df[['pres_4', 'pres_6', 'pres_9', 'pres_10', 'pres_12', 'pres_13', 'pres_15', 'pres_16', 'pres_19']].apply(pd.to_numeric, errors='coerce').sum(axis=1)
+work_df['leg_ben'] = work_df[['pres_1', 'pres_2', 'pres_3', 'pres_5', 'pres_7', 'pres_8', 'pres_11', 'pres_14', 'pres_17', 'pres_18']].mean(axis=1)
+work_df['extra_ben'] = work_df[['pres_4', 'pres_6', 'pres_9', 'pres_10', 'pres_12', 'pres_13', 'pres_15', 'pres_16', 'pres_19']].sum(axis=1)
 
-work_df['informal'] = (work_df['contrato'] == "2").astype(int)
+work_df['informal'] = (work_df['contrato'] == 2).astype(int)
 
 work_df['tempo'] = 0
-work_df.loc[(work_df['tipocontr'] == "1") & (work_df['informal'] != "1"), 'tempo'] = 1
+work_df.loc[(work_df['tipocontr'] == 1) & (work_df['informal'] != 1), 'tempo'] = 1
 
 work_df['no_pay'] = 0
-work_df.loc[(work_df['pago'] == "2") | (work_df['pago'] == "3"), 'no_pay'] = 1
+work_df.loc[(work_df['pago'] == 2) | (work_df['pago'] == 3), 'no_pay'] = 1
 
-work_df['subor'] = (work_df['subor'] == "1").astype(int)
+work_df['subor'] = (work_df['subor'] == 1).astype(int)
 
-work_df['indep'] = (work_df['indep'] == "1").astype(int)
+work_df['indep'] = (work_df['indep'] == 1).astype(int)
 work_df = work_df.rename(columns={'indep': 'self_emp'})
 
 
 work_df['no_wage'] = 0
-work_df.loc[(work_df['tiene_suel'] == "1"), 'no_wage'] = 1
+work_df.loc[(work_df['tiene_suel'] == 1), 'no_wage'] = 1
 
 # Using already existing variables
 # Keeping so far: folioviv foliohog numren informal tempo no_pay htrab scian(sector) sinco(type of job) leg_ben extra_ben 
 work_df = work_df[['folioviv', 'foliohog', 'numren', 'subor', 'self_emp', 'htrab', 'sinco', 'scian', 'leg_ben', 'extra_ben', 'informal', 'tempo', 'no_pay', 'no_wage']]
 work_df = work_df.sort_values(by = ['folioviv', 'foliohog', 'numren'])
 
-work_df.to_csv('Bases/work_english.csv', index = False)
+work_df.to_csv(BASE_DIR / 'data' / 'processed' / 'work_english.csv', index=False)
 
 ################################################################################
 #                                                                              #
@@ -54,12 +81,15 @@ work_df.to_csv('Bases/work_english.csv', index = False)
 #                                                                              #
 ################################################################################                                                                                                                                                            
 
-income_df = pd.read_csv('Bases de datos/ingresos.csv', low_memory=False)
+income_df = pd.read_csv(DATA_DIR / 'ingresos.csv', low_memory=False, dtype=str)
 income_df = income_df.loc[:, ~income_df.columns.str.startswith('mes') & (income_df.columns != 'ing_tri')]
-    
+income_df[['ing_1', 'ing_2', 'ing_3',
+       'ing_4', 'ing_5', 'ing_6']] = income_df[['ing_1', 'ing_2', 'ing_3',
+       'ing_4', 'ing_5', 'ing_6']].apply(pd.to_numeric, errors='coerce')
+       
 # In order to simplify matters, we are going to be working with an average income for the six months recorded
 # income_df = income_df.fillna(0)
-income_df['avg_inc'] = income_df[['ing_1', 'ing_2', 'ing_3', 'ing_4', 'ing_5', 'ing_6']].apply(pd.to_numeric, errors='coerce').mean(axis=1)
+income_df['avg_inc'] = income_df[['ing_1', 'ing_2', 'ing_3', 'ing_4', 'ing_5', 'ing_6']].mean(axis=1)
 
 income_df = income_df.loc[:, ~income_df.columns.str.startswith('ing')]
 
@@ -80,7 +110,7 @@ income_df['other'] = np.where(income_df['other'] < 0, 0, income_df['other'])
 income_df = income_df[['folioviv', 'foliohog', 'numren', 'wage', 'work_inc', 'dis_ben', 'other']]
 income_df = income_df.sort_values(by = ['folioviv', 'foliohog', 'numren'])
 
-income_df.to_csv('Bases/income_english.csv', index=False)
+income_df.to_csv(BASE_DIR / 'data' / 'processed' / 'income_english.csv', index=False)
 
 ################################################################################
 #                                                                              #
@@ -88,15 +118,17 @@ income_df.to_csv('Bases/income_english.csv', index=False)
 #                                                                              #
 ################################################################################                                                                                                                                                            
 
-population_df = pd.read_csv('Bases de datos/poblacion.csv', low_memory=False)
-population_df[['parentesco','edad','asis_esc','nivelaprob','gradoaprob','antec_esc','hablaind']
-              ]=population_df[['parentesco','edad','asis_esc','nivelaprob','gradoaprob','antec_esc','hablaind']].apply(pd.to_numeric, errors='coerce')
+population_df = pd.read_csv(DATA_DIR / 'poblacion.csv', low_memory=False, dtype=str)
+population_df[['edo_conyug', 'parentesco','edad','asis_esc','nivelaprob','gradoaprob','antec_esc','hablaind', 'disc_camin', 'disc_ver', 'disc_brazo', 'disc_apren', 'disc_oir', 'disc_vest', 'disc_habla', 'disc_acti',
+                'cau_camin', 'cau_ver', 'cau_brazo', 'cau_apren', 'cau_oir', 'cau_vest', 'cau_habla', 'cau_acti']
+               ]=population_df[['edo_conyug', 'parentesco','edad','asis_esc','nivelaprob','gradoaprob','antec_esc','hablaind', 'disc_camin', 'disc_ver', 'disc_brazo', 'disc_apren', 'disc_oir', 'disc_vest', 'disc_habla', 'disc_acti',
+                'cau_camin', 'cau_ver', 'cau_brazo', 'cau_apren', 'cau_oir', 'cau_vest', 'cau_habla', 'cau_acti']].apply(pd.to_numeric, errors='coerce')
 
 # Following what CONEVAL does to estimate the poverty index, we exclude people who are in the household as housekeepers or guests
 population_df = population_df[~((population_df['parentesco'] >= 400) & (population_df['parentesco'] < 500) |
                   (population_df['parentesco'] >= 700) & (population_df['parentesco'] < 800))]
 
-# This database contains multiple types of variables that are of interest to us:
+#This database contains multiple types of variables that are of interest to us:
 #	General demographical variables
 #	Some variables related to timeuse and job status (PNEA)
 #	DISABILITY: type, severity and cause
@@ -113,7 +145,7 @@ population_df['female'] = (population_df['sexo'] == 2).astype(int)
 
 # Consider married people those who live together and/or are legally married
 population_df['married'] = 0
-population_df.loc[(population_df['edo_conyug'] == "1") | (population_df['edo_conyug'] == "1"), 'married'] = 1
+population_df.loc[(population_df['edo_conyug'] == 1) | (population_df['edo_conyug'] == 1), 'married'] = 1
 
 # Following CONEVAL, define ethnicity based on speaking an indigenous tongue
 population_df['isp'] = (population_df['hablaind'] == 1).astype(int)
@@ -123,72 +155,72 @@ population_df['isp'] = (population_df['hablaind'] == 1).astype(int)
 ##############################Disability variables##############################
 # Following both the Washington's group recomendations and CONEVAL methodology, we define persons with a disability those individuals who either cannot do an activity, or do so with a lot of difficulty
 population_df['dis_walk'] = 0
-population_df.loc[(population_df['disc_camin'] == "2") | (population_df['disc_camin'] == "1"), 'dis_walk'] = 1
+population_df.loc[(population_df['disc_camin'] == 2) | (population_df['disc_camin'] == 1), 'dis_walk'] = 1
 population_df['dis_see'] = 0
-population_df.loc[(population_df['disc_ver'] == "2") | (population_df['disc_ver'] == "1"), 'dis_see'] = 1
+population_df.loc[(population_df['disc_ver'] == 2) | (population_df['disc_ver'] == 1), 'dis_see'] = 1
 population_df['dis_arm'] = 0
-population_df.loc[(population_df['disc_brazo'] == "2") | (population_df['disc_brazo'] == "1"), 'dis_arm'] = 1
+population_df.loc[(population_df['disc_brazo'] == 2) | (population_df['disc_brazo'] == 1), 'dis_arm'] = 1
 population_df['dis_learn'] = 0
-population_df.loc[(population_df['disc_apren'] == "2") | (population_df['disc_apren'] == "1"), 'dis_learn'] = 1
+population_df.loc[(population_df['disc_apren'] == 2) | (population_df['disc_apren'] == 1), 'dis_learn'] = 1
 population_df['dis_hear'] = 0
-population_df.loc[(population_df['disc_oir'] == "2") | (population_df['disc_oir'] == "1"), 'dis_hear'] = 1
+population_df.loc[(population_df['disc_oir'] == 2) | (population_df['disc_oir'] == 1), 'dis_hear'] = 1
 population_df['dis_dress'] = 0
-population_df.loc[(population_df['disc_vest'] == "2") | (population_df['disc_vest'] == "1"), 'dis_dress'] = 1
+population_df.loc[(population_df['disc_vest'] == 2) | (population_df['disc_vest'] == 1), 'dis_dress'] = 1
 population_df['dis_talk'] = 0
-population_df.loc[(population_df['disc_habla'] == "2") | (population_df['disc_habla'] == "1"), 'dis_talk'] = 1
+population_df.loc[(population_df['disc_habla'] == 2) | (population_df['disc_habla'] == 1), 'dis_talk'] = 1
 population_df['dis_ment'] = 0
-population_df.loc[(population_df['disc_acti'] == "2") | (population_df['disc_acti'] == "1"), 'dis_ment'] = 1
+population_df.loc[(population_df['disc_acti'] == 2) | (population_df['disc_acti'] == 1), 'dis_ment'] = 1
 
 # walk, see, arm, learn, hear, dress, talk, ment. Dummies of at-birth disability
-population_df['cause_walk'] = (population_df['cau_camin'] == "3").astype(int)
-population_df['cause_see'] = (population_df['cau_ver'] == "3").astype(int)
-population_df['cause_arm'] = (population_df['cau_brazo'] == "3").astype(int)
-population_df['cause_learn'] = (population_df['cau_apren'] == "3").astype(int)
-population_df['cause_hear'] = (population_df['cau_oir'] == "3").astype(int)
-population_df['cause_dress'] = (population_df['cau_vest'] == "3").astype(int)
-population_df['cause_talk'] = (population_df['cau_habla'] == "3").astype(int)
-population_df['cause_ment'] = (population_df['cau_acti'] == "3").astype(int)
+population_df['cause_walk'] = (population_df['cau_camin'] == 3).astype(int)
+population_df['cause_see'] = (population_df['cau_ver'] == 3).astype(int)
+population_df['cause_arm'] = (population_df['cau_brazo'] == 3).astype(int)
+population_df['cause_learn'] = (population_df['cau_apren'] == 3).astype(int)
+population_df['cause_hear'] = (population_df['cau_oir'] == 3).astype(int)
+population_df['cause_dress'] = (population_df['cau_vest'] == 3).astype(int)
+population_df['cause_talk'] = (population_df['cau_habla'] == 3).astype(int)
+population_df['cause_ment'] = (population_df['cau_acti'] == 3).astype(int)
 
-population_df.loc[~population_df['disc_camin'].isin(["1", "2"]), 'disc_camin'] = 0
-population_df.loc[~population_df['disc_ver'].isin(["1", "2"]), 'disc_ver'] = 0
-population_df.loc[~population_df['disc_brazo'].isin(["1", "2"]), 'disc_brazo'] = 0
-population_df.loc[~population_df['disc_apren'].isin(["1", "2"]), 'disc_apren'] = 0
-population_df.loc[~population_df['disc_oir'].isin(["1", "2"]), 'disc_oir'] = 0
-population_df.loc[~population_df['disc_vest'].isin(["1", "2"]), 'disc_vest'] = 0
-population_df.loc[~population_df['disc_habla'].isin(["1", "2"]), 'disc_habla'] = 0
-population_df.loc[~population_df['disc_acti'].isin(["1", "2"]), 'disc_acti'] = 0
+population_df.loc[~population_df['disc_camin'].isin([1, 2]), 'disc_camin'] = 0
+population_df.loc[~population_df['disc_ver'].isin([1, 2]), 'disc_ver'] = 0
+population_df.loc[~population_df['disc_brazo'].isin([1, 2]), 'disc_brazo'] = 0
+population_df.loc[~population_df['disc_apren'].isin([1, 2]), 'disc_apren'] = 0
+population_df.loc[~population_df['disc_oir'].isin([1, 2]), 'disc_oir'] = 0
+population_df.loc[~population_df['disc_vest'].isin([1, 2]), 'disc_vest'] = 0
+population_df.loc[~population_df['disc_habla'].isin([1, 2]), 'disc_habla'] = 0
+population_df.loc[~population_df['disc_acti'].isin([1, 2]), 'disc_acti'] = 0
 
 population_df['sev_walk'] = 0
-population_df.loc[population_df['disc_camin'] == "2", 'sev_walk'] = 1
-population_df.loc[population_df['disc_camin'] == "1", 'sev_walk'] = 2
+population_df.loc[population_df['disc_camin'] == 2, 'sev_walk'] = 1
+population_df.loc[population_df['disc_camin'] == 1, 'sev_walk'] = 2
 
 population_df['sev_see'] = 0
-population_df.loc[population_df['disc_ver'] == "2", 'sev_see'] = 1
-population_df.loc[population_df['disc_ver'] == "1", 'sev_see'] = 2
+population_df.loc[population_df['disc_ver'] == 2, 'sev_see'] = 1
+population_df.loc[population_df['disc_ver'] == 1, 'sev_see'] = 2
 
 population_df['sev_arm'] = 0
-population_df.loc[population_df['disc_brazo'] == "2", 'sev_arm'] = 1
-population_df.loc[population_df['disc_brazo'] == "1", 'sev_arm'] = 2
+population_df.loc[population_df['disc_brazo'] == 2, 'sev_arm'] = 1
+population_df.loc[population_df['disc_brazo'] == 1, 'sev_arm'] = 2
 
 population_df['sev_learn'] = 0
-population_df.loc[population_df['disc_apren'] == "2", 'sev_learn'] = 1
-population_df.loc[population_df['disc_apren'] == "1", 'sev_learn'] = 2
+population_df.loc[population_df['disc_apren'] == 2, 'sev_learn'] = 1
+population_df.loc[population_df['disc_apren'] == 1, 'sev_learn'] = 2
 
 population_df['sev_hear'] = 0
-population_df.loc[population_df['disc_oir'] == "2", 'sev_hear'] = 1
-population_df.loc[population_df['disc_oir'] == "1", 'sev_hear'] = 2
+population_df.loc[population_df['disc_oir'] == 2, 'sev_hear'] = 1
+population_df.loc[population_df['disc_oir'] == 1, 'sev_hear'] = 2
 
 population_df['sev_vest'] = 0
-population_df.loc[population_df['disc_vest'] == "2", 'sev_dress'] = 1
-population_df.loc[population_df['disc_vest'] == "1", 'sev_dress'] = 2
+population_df.loc[population_df['disc_vest'] == 2, 'sev_dress'] = 1
+population_df.loc[population_df['disc_vest'] == 1, 'sev_dress'] = 2
 
 population_df['sev_talk'] = 0
-population_df.loc[population_df['disc_habla'] == "2", 'sev_talk'] = 1
-population_df.loc[population_df['disc_habla'] == "1", 'sev_talk'] = 2
+population_df.loc[population_df['disc_habla'] == 2, 'sev_talk'] = 1
+population_df.loc[population_df['disc_habla'] == 1, 'sev_talk'] = 2
 
 population_df['sev_ment'] = 0
-population_df.loc[population_df['disc_acti'] == "2", 'sev_ment'] = 1
-population_df.loc[population_df['disc_acti'] == "1", 'sev_ment'] = 2
+population_df.loc[population_df['disc_acti'] == 2, 'sev_ment'] = 1
+population_df.loc[population_df['disc_acti'] == 1, 'sev_ment'] = 2
 
 # Keeping dis* and cause*
 
@@ -226,7 +258,7 @@ population_df['secondary'] = (population_df['nivelaprob'] == 3).astype(int)
 population_df['bac'] = 0
 population_df.loc[(population_df['nivelaprob'] == 4) | (population_df['nivelaprob'] == 5), 'bac'] = 1
 population_df['higher'] = 0
-population_df.loc[(population_df['nivelaprob'] == 6) | (population_df['nivelaprob'] == 7) | (population_df['nivelaprob'] == 8) | (population_df['nivelaprob'] == 9), 'higher'] = 1
+population_df.loc[(population_df['nivelaprob'] == 6) | (population_df['nivelaprob'] == 7) | (population_df['nivelaprob'] == 8) | (population_df['nivelaprob'] == 9), 'bac'] = 1
 
 ##############################Job related variables##############################
 # We can build an experience dummy based on the number of years spent contributing to social security: we only have this data for subordinate persons in formal jobs
@@ -258,7 +290,7 @@ population_df = population_df[
     ] or col.startswith('dis') or col.startswith('cause')]
 ]
 
-population_df.to_csv('Bases/population_english.csv', index=False)
+population_df.to_csv(BASE_DIR / 'data' / 'processed' / 'population_english.csv', index=False)
 
 ################################################################################
 #                                                                              #
@@ -269,4 +301,4 @@ population_df.to_csv('Bases/population_english.csv', index=False)
 merged_df = pd.merge(income_df, population_df, on=['folioviv', 'foliohog', 'numren'], how='left')
 merged_df = pd.merge(merged_df, work_df, on=['folioviv', 'foliohog', 'numren'], how='left')
 
-merged_df.to_csv("Bases/disability_work.csv", index=False)
+merged_df.to_csv(BASE_DIR / "data" / "processed" / "disability_work.csv", index=False)
