@@ -3,13 +3,15 @@ import numpy as np
 import scipy.stats as stats
 from tabulate import tabulate
 import statsmodels.api as sm
-import os
+from pathlib import Path
 
-# Load the dataset
-os.chdir("C:/Users/ediaz/OneDrive - up.edu.mx/Research/Majo Favela")
+# Repository root directory
+BASE_DIR = Path(__file__).resolve().parents[2]
 
-b2020 = pd.read_csv('Python_MMP_2020/Bases/disability_work.csv')
-b2022 = pd.read_csv('Python_MMP_2022/Bases/disability_work.csv')
+# Load the dataset files
+
+b2020 = pd.read_csv(BASE_DIR / 'data' / 'processed' / 'disability_work_2020.csv')
+b2022 = pd.read_csv(BASE_DIR / 'data' / 'processed' / 'disability_work_2022.csv')
 
 b2020['l_other'] = np.where(b2020['other'] != 0, np.log(b2020['other']), 0)
 b2022['l_other'] = np.where(b2022['other'] != 0, np.log(b2022['other']), 0)

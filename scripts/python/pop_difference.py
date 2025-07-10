@@ -1,13 +1,15 @@
 import pandas as pd
 import scipy.stats as stats
 from tabulate import tabulate
-import os
+from pathlib import Path
 
-# Load the dataset
-os.chdir("C:/Users/ediaz/OneDrive - up.edu.mx/Research/Majo Favela")
+# Repository root directory
+BASE_DIR = Path(__file__).resolve().parents[2]
 
-b2020 = pd.read_csv('Python_MMP_2020/Bases/disability_work_edit.csv')
-b2022 = pd.read_csv('Python_MMP_2022/Bases/disability_work_edit.csv')
+# Load the datasets from each year
+
+b2020 = pd.read_csv(BASE_DIR / 'data' / 'processed' / 'disability_work_edit_2020.csv')
+b2022 = pd.read_csv(BASE_DIR / 'data' / 'processed' / 'disability_work_edit_2022.csv')
 
 cols = ['dis_walk', 'dis_see', 'dis_arm', 'dis_learn', 'dis_hear',
         'dis_learn', 'dis_dress', 'dis_talk', 'dis_ment', 'physical',
